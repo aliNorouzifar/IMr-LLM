@@ -1,7 +1,6 @@
 
 from pm4py.objects.log.importer.xes import importer as xes_importer
 from pm4py.visualization.petri_net import visualizer as pn_visualizer
-from local_pm4py.analysis import gui
 import time
 import pm4py
 from pm4py.objects.log import obj as log_instance
@@ -10,28 +9,15 @@ from local_pm4py.declare.discovery import discover_declare
 from local_pm4py.functions import parse_rules
 
 
-support, ratio, LPlus_LogFile, LMinus_LogFile, text= gui.input()
-logP = xes_importer.apply(LPlus_LogFile)
+support = 0.2
+ratio = 0
+logP = xes_importer.apply(r"C:\Users\kourani\PycharmProjects\IMr-LLM\files\01_running-example.xes")
 
-if LMinus_LogFile != '':
-    logM = xes_importer.apply(LMinus_LogFile)
-else:
-    logM = log_instance.EventLog()
-    logM.append(log_instance.Trace())
+activities = list(pm4py.get_event_attribute_values(logP, attribute="concept:name").keys())
+print(activities)
 
-
-EXISTENCE = "existence"
-INIT = "init"
-END = "end"
-RESPONDED_EXISTENCE = "responded_existence"
-RESPONSE = "response"
-PRECEDENCE = "precedence"
-COEXISTENCE = "coexistence"
-NONCOEXISTENCE = "noncoexistence"
-NONSUCCESSION = "nonsuccession"
-ATMOST_ONE = "atmost1"
-
-allowed_templates = {RESPONDED_EXISTENCE, RESPONSE,COEXISTENCE, PRECEDENCE, NONCOEXISTENCE,EXISTENCE,INIT,END,NONSUCCESSION,ATMOST_ONE}
+logM = log_instance.EventLog()
+logM.append(log_instance.Trace())
 
 # conf = 1
 # print(f'conf: {conf}')
@@ -41,7 +27,8 @@ allowed_templates = {RESPONDED_EXISTENCE, RESPONSE,COEXISTENCE, PRECEDENCE, NONC
 #         rules[r] = []
 
 
-rules = parse_rules.parse_constraints(text)
+rules_file = r"C:\Users\kourani\PycharmProjects\IMr-LLM\files\rules.txt"
+rules = parse_rules.parse_constraints(rules_file, activities)
 
 
 start = time.time()
@@ -51,7 +38,7 @@ end = time.time()
 print("run time:")
 print(end-start)
 
-parameters = {pn_visualizer.Variants.WO_DECORATION.value.Parameters.FORMAT:"pdf"}
+parameters = {pn_visualizer.Variants.WO_DECORATION.value.Parameters.FORMAT:"png"}
 gviz = pn_visualizer.apply(net, initial_marking, final_marking, parameters=parameters)
 pn_visualizer.view(gviz)
 

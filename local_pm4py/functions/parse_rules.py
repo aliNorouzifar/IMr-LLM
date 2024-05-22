@@ -1,51 +1,51 @@
-def parse_constraints(file_path):
-    constraints_dict = {
-        'atmost1': [],
-        'existence': [],
-        'response': [],
-        'precedence': [],
-        'coexistence': [],
-        'noncoexistence': [],
-        'nonsuccession': [],
-        'responded_existence': []
-    }
+import warnings
+
+constraint_key_dict = {
+    "at-most": ("atmost1", 1),
+    "existence": ("existence", 1),
+    "response": ("response", 2),
+    "precedence": ("precedence", 2),
+    "co-existence": ("coexistence", 2),
+    "not-co-existence": ("noncoexistence", 2),
+    "not-succession": ("nonsuccession", 2),
+    "responded_existence": ("responded_existence", 2),
+}
+
+
+def parse_constraints(file_path, log_activities):
+    constraints_dict = {v[0]: [] for v in constraint_key_dict.values()}
 
     with open(file_path, 'r') as file:
         lines = file.readlines()
 
+        line_num = 1
+
         for line in lines:
             line = line.strip()
-            if line.startswith('at-most'):
-                activity = line[len('at-most('):-1].strip()
-                constraints_dict['atmost1'].append((activity,))
-            elif line.startswith('existence'):
-                activity = line[len('existence('):-1].strip()
-                constraints_dict['existence'].append((activity,))
-            elif line.startswith('response'):
-                activities = line[len('response('):-1].split(',')
-                activities = tuple(activity.strip() for activity in activities)
-                constraints_dict['response'].append(activities)
-            elif line.startswith('precedence'):
-                activities = line[len('precedence('):-1].split(',')
-                activities = tuple(activity.strip() for activity in activities)
-                constraints_dict['precedence'].append(activities)
-            elif line.startswith('co-existence'):
-                activities = line[len('co-existence('):-1].split(',')
-                activities = tuple(activity.strip() for activity in activities)
-                constraints_dict['coexistence'].append(activities)
-            elif line.startswith('not-co-existence'):
-                activities = line[len('not-co-existence('):-1].split(',')
-                activities = tuple(activity.strip() for activity in activities)
-                constraints_dict['noncoexistence'].append(activities)
-            elif line.startswith('not-succession'):
-                activities = line[len('not-succession('):-1].split(',')
-                activities = tuple(activity.strip() for activity in activities)
-                constraints_dict['nonsuccession'].append(activities)
-            elif line.startswith('responded-existence'):
-                activities = line[len('responded-existence('):-1].split(',')
-                activities = tuple(activity.strip() for activity in activities)
-                constraints_dict['responded_existence'].append(activities)
+            if len(line) == 0:
+                warnings.warn("Empty line skipped!")
+                continue
+            constraint = line.split("(")[0].strip()
+
+            if constraint not in constraint_key_dict.keys():
+                raise Exception(f"'{constraint}' in line {line_num} is not a valid constraint key!")
+
+            activities = line[len(f'{constraint}('):-1].split(',')
+            activities = tuple(activity.strip() for activity in activities)
+
+            for activity in activities:
+                if activity not in log_activities:
+                    raise Exception(f"Activity '{activity}' used in line {line_num} is not present in the event log!")
+
+            key = constraint_key_dict[constraint][0]
+            num_allowed_activities = constraint_key_dict[constraint][1]
+
+            if num_allowed_activities != len(activities):
+                raise Exception(f"The constraint '{constraint}' takes {num_allowed_activities} activities,"
+                                f" but the number of given activities in line {line_num} is {len(activities)}")
+
+            constraints_dict[key].append(activities)
+
+            line_num = line_num + 1
 
     return constraints_dict
-
-

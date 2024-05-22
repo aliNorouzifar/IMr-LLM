@@ -1,0 +1,4 @@
+existence(register request)
+
+existence(check ticket)
+precedence(examine casually, examine thoroughly)
