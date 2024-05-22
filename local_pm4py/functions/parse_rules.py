@@ -29,16 +29,16 @@ def extract_rules_from_response(response_message):
 def parse_constraints_from_file(file_path, log_activities):
     with open(file_path, 'r') as file:
         lines = file.readlines()
-        res = parse_constraints(lines)
+        res = parse_constraints(lines, log_activities)
     return res
 
 
 def parse_constraints_from_response(response_message, log_activities):
     lines = extract_rules_from_response(response_message)
-    return parse_constraints(lines)
+    return parse_constraints(lines, log_activities)
 
 
-def parse_constraints(lines):
+def parse_constraints(lines, log_activities):
     constraints_dict = {v[0]: [] for v in constraint_key_dict.values()}
     line_num = 1
     for line in lines:

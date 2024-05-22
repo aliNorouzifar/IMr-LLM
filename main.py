@@ -5,8 +5,7 @@ import time
 import pm4py
 from pm4py.objects.log import obj as log_instance
 from local_pm4py import discovery
-from local_pm4py.declare.discovery import discover_declare
-from local_pm4py.functions import parse_rules
+from local_pm4py.functions.parse_rules import parse_constraints_from_response
 from utils.openai_connection import create_message, generate_response_with_history
 from utils.prompting import create_inital_prompt
 
@@ -38,9 +37,7 @@ logM.append(log_instance.Trace())
 
 # rules_file = r"C:\Users\kourani\PycharmProjects\IMr-LLM\files\rules.txt"
 
-response_message = '''START```\nprecedence(register request, examine casually)\nprecedence(examine casually, examine thoroughly)\n```END'''
-
-rules = parse_rules.parse_constraints(response_message, activities)
+rules = parse_constraints_from_response(response_message, activities)
 
 print("constraints: ", rules)
 
