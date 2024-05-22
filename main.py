@@ -7,14 +7,23 @@ from pm4py.objects.log import obj as log_instance
 from local_pm4py import discovery
 from local_pm4py.declare.discovery import discover_declare
 from local_pm4py.functions import parse_rules
-
+from utils.openai_connection import create_message, generate_response_with_history
+from utils.prompting import create_inital_prompt
 
 support = 0.2
 ratio = 0
 logP = xes_importer.apply(r"C:\Users\kourani\PycharmProjects\IMr-LLM\files\01_running-example.xes")
 
 activities = list(pm4py.get_event_attribute_values(logP, attribute="concept:name").keys())
-print(activities)
+
+text = "the request is always registered. Before examining the request thoroughly, it must be examined casually"
+
+prompt = create_inital_prompt(activities, text)
+conversation = [create_message(prompt)]
+
+response_message, conversation = generate_response_with_history(conversation)
+
+print(conversation)
 
 logM = log_instance.EventLog()
 logM.append(log_instance.Trace())
@@ -27,8 +36,13 @@ logM.append(log_instance.Trace())
 #         rules[r] = []
 
 
-rules_file = r"C:\Users\kourani\PycharmProjects\IMr-LLM\files\rules.txt"
-rules = parse_rules.parse_constraints(rules_file, activities)
+# rules_file = r"C:\Users\kourani\PycharmProjects\IMr-LLM\files\rules.txt"
+
+response_message = '''START```\nprecedence(register request, examine casually)\nprecedence(examine casually, examine thoroughly)\n```END'''
+
+rules = parse_rules.parse_constraints(response_message, activities)
+
+print("constraints: ", rules)
 
 
 start = time.time()
